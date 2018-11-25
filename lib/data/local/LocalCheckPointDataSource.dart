@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:hybrid_app/data/model/CheckPoint.dart';
-import 'package:hybrid_app/data/model/DataSource.dart';
+import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
+import 'package:hybrid_app/data/model/checkpoint/CheckPointDataSource.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LocalDataSource implements DataSource<CheckPoint> {
+class LocalCheckPointDataSource implements CheckPointDataSource {
   Future<List<CheckPoint>> loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String jsonString = prefs.getString("key_qr_data");

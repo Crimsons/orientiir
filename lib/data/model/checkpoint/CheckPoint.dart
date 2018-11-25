@@ -4,7 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 
-part 'CheckPoint.g.dart';
+part 'package:hybrid_app/data/model/checkpoint/CheckPoint.g.dart';
 
 @JsonSerializable()
 class CheckPoint {
