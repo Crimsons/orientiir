@@ -20,6 +20,22 @@ class Contest {
     this.checkpoints = List();
   }
 
+  List<CheckPoint> getCheckPoints() {
+    if (checkpoints == null) {
+      checkpoints = List();
+    }
+
+    return checkpoints;
+  }
+
+  void addCheckPoint(CheckPoint checkPoint) {
+    if (checkpoints == null) {
+      checkpoints = List();
+    }
+
+    checkpoints.add(checkPoint);
+  }
+
   factory Contest.fromJson(Map<String, dynamic> json) =>
       _$ContestFromJson(json);
 

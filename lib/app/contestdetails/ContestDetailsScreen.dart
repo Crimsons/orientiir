@@ -4,25 +4,32 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hybrid_app/app/login/LoginScreen.dart';
-import 'package:hybrid_app/data/local/LocalCheckPointDataSource.dart';
+import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
-import 'package:hybrid_app/data/model/checkpoint/CheckPointDataSource.dart';
+import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
+import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
 import 'package:intl/intl.dart';
 
-class StageDetailsScreen extends StatefulWidget {
+class ContestDetailsScreen extends StatefulWidget {
+  final String contestId;
+
+  ContestDetailsScreen({Key key, @required this.contestId}) : super(key: key);
+
   @override
-  State createState() => StageDetailsState();
+  State createState() => ContestDetailsState(contestId);
 }
 
-class StageDetailsState extends State<StageDetailsScreen> {
-  final CheckPointDataSource dataSource = LocalCheckPointDataSource();
-  List<CheckPoint> _qrData = List();
+class ContestDetailsState extends State<ContestDetailsScreen> {
+  final ContestDataSource dataSource = LocalContestDataSource();
+  final String contestId;
+  Contest contest;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  ContestDetailsState(this.contestId) : super();
 
   @override
   void initState() {
     super.initState();
-
     _loadData();
   }
 
@@ -34,26 +41,40 @@ class StageDetailsState extends State<StageDetailsScreen> {
         onPressed: _scan,
         child: Icon(Icons.add),
       ),
-      appBar: new AppBar(
-        title: new Text('Orienteerumise rakendus'),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: navigateToLogin,
-          ),
-        ],
-      ),
-      body: listViewBuilder(),
+      appBar: buildAppBar(),
+      body: buildBody(),
     );
   }
 
-  ListView listViewBuilder() {
+  Widget buildAppBar() {
+    return AppBar(
+      title: Text('Orienteerumise rakendus'),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: navigateToLogin,
+        ),
+      ],
+    );
+  }
+
+  Widget buildBody() {
+    if (contest == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else {
+      return buildListView();
+    }
+  }
+
+  Widget buildListView() {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
-        CheckPoint checkPoint = _qrData[index];
+        CheckPoint checkPoint = contest.getCheckPoints()[index];
         IconData iconData = Icons.beenhere;
         String title = checkPoint.code;
-        var formatter = new DateFormat("kk:mm:ss");
+        var formatter = DateFormat("kk:mm:ss");
         String subTitle = formatter.format(checkPoint.dateTime);
         return ListTile(
           leading: Icon(iconData),
@@ -61,7 +82,9 @@ class StageDetailsState extends State<StageDetailsScreen> {
           subtitle: Text(subTitle),
         );
       },
-      itemCount: _qrData.length,
+      itemCount: contest
+          .getCheckPoints()
+          .length,
     );
   }
 
@@ -73,7 +96,7 @@ class StageDetailsState extends State<StageDetailsScreen> {
         return;
       }
       CheckPoint checkPoint = CheckPoint.fromCode(code);
-      setState(() => _qrData.add(checkPoint));
+      setState(() => contest.addCheckPoint(checkPoint));
       _saveData();
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
@@ -111,11 +134,11 @@ class StageDetailsState extends State<StageDetailsScreen> {
   }
 
   void _loadData() async {
-    var data = await dataSource.loadData();
-    setState(() => _qrData = data);
+    var contest = await dataSource.load(contestId);
+    setState(() {
+      this.contest = contest;
+    });
   }
 
-  void _saveData() async {
-    dataSource.saveData(_qrData);
-  }
+  void _saveData() async => dataSource.save(contest);
 }

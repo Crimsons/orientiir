@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hybrid_app/app/contestdetails/ContestDetailsScreen.dart';
 import 'package:hybrid_app/app/login/LoginScreen.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
+import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
-import 'package:hybrid_app/data/model/user/User.dart';
 import 'package:hybrid_app/data/model/user/UserDataSource.dart';
 import 'package:intl/intl.dart';
 
@@ -16,39 +17,38 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   final UserDataSource userDataSource = LocalUserDataSource();
   final ContestDataSource contestDataSource = LocalContestDataSource();
-  User user;
-  List<Contest> contests = List();
+  List<Contest> _contests = List();
 
   @override
   void initState() {
     super.initState();
-    loadUser();
-    loadContests();
+    _loadUser();
+    _loadContests();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar(),
-      body: buildBody(),
+      appBar: _buildAppBar(),
+      body: _buildBody(),
       floatingActionButton: FloatingActionButton(
-        onPressed: onAddNewContestPressed,
+        onPressed: _onAddNewContestPressed,
         child: Icon(Icons.add),
       ),
     );
   }
 
-  AppBar buildAppBar() {
+  AppBar _buildAppBar() {
     return AppBar(
       title: Text("Orienteerumise rakendus"),
     );
   }
 
-  Center buildBody() {
+  Center _buildBody() {
     return Center(
       child: ListView.builder(
         itemBuilder: (BuildContext context, int index) {
-          Contest contest = contests[index];
+          Contest contest = _contests[index];
           IconData iconData = Icons.motorcycle;
           String title = contest.name;
           var formatter = new DateFormat("dd.MM.yyyy");
@@ -57,45 +57,55 @@ class MainScreenState extends State<MainScreen> {
             leading: Icon(iconData),
             title: Text(title),
             subtitle: Text(subTitle),
+            onTap: () => _onListItemTapped(contest),
           );
         },
-        itemCount: contests.length,
+        itemCount: _contests.length,
       ),
     );
   }
 
-  void loadUser() async {
+  void _loadUser() async {
     var user = await userDataSource.loadData();
 
     if (user == null) {
-      navigateToLogin();
+      _navigateToLogin();
     }
-
-    setState(() {
-      this.user = user;
-    });
   }
 
-  void navigateToLogin() {
+  void _navigateToLogin() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginScreen()),
     );
   }
 
-  void loadContests() async {
+  void _loadContests() async {
     var contestList = await contestDataSource.loadAll();
 
     setState(() {
-      this.contests = contestList;
+      this._contests = contestList;
     });
   }
 
-  void onAddNewContestPressed() {
+  void _onAddNewContestPressed() {
     Contest contest = Contest.fromName("Esimene võistlus", DateTime.now());
+    contest.checkpoints = [CheckPoint.fromCode("29")];
     setState(() {
-      this.contests.add(contest);
+      this._contests.add(contest);
     });
+    _saveContest(contest);
+  }
+
+  void _saveContest(Contest contest) {
     contestDataSource.save(contest);
+  }
+
+  void _onListItemTapped(Contest contest) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ContestDetailsScreen(contestId: contest.id)),
+    );
   }
 }

@@ -28,14 +28,14 @@ class LocalContestDataSource implements ContestDataSource {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var contentsList = _loadAll(prefs);
 
-    return contentsList.firstWhere((contest) => contest.id == id,
+    return contentsList.firstWhere((item) => item.id == id,
         orElse: () => null);
   }
 
   void save(Contest contest) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var contests = _loadAll(prefs);
-    contests.remove(contest);
+    contests.removeWhere((item) => item.id == contest.id);
     contests.add(contest);
     _save(prefs, contests);
   }
