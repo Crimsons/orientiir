@@ -1,6 +1,7 @@
-# hybrid_app
+# Orienteerumise rakendus
 
-Super new hybrid app using Flutter.
+Moto-orienteerumise rakendus
+http://orienteerumine.streetmoto.ee/orienteerumissari
 
 ## Getting Started
 
