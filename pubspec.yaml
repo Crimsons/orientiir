@@ -23,6 +23,7 @@ dependencies:
   uuid: 1.0.3
   barcode_scan: ^0.0.7
   crypto: ^2.0.6
+  intl: 0.15.7
 
 
 dev_dependencies:

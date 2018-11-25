@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:hybrid_app/data/local/LocalDataSource.dart';
 import 'package:hybrid_app/data/model/CheckPoint.dart';
 import 'package:hybrid_app/data/model/DataSource.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(new MyApp());
@@ -41,20 +42,26 @@ class _MyAppState extends State<MyApp> {
         appBar: new AppBar(
           title: new Text('Orienteerumise rakendus'),
         ),
-        body: ListView.builder(
-          itemBuilder: (BuildContext context, int index) {
-            CheckPoint checkPoint = _qrData[index];
-            return ListTile(
-              leading: Icon(Icons.map),
-              title: Text(checkPoint.code +
-                  " - " +
-                  checkPoint.dateTime.toIso8601String()),
-              subtitle: Text(checkPoint.hash ?? ""),
-            );
-          },
-          itemCount: _qrData.length,
-        ),
+        body: listViewBuilder(),
       ),
+    );
+  }
+
+  ListView listViewBuilder() {
+    return ListView.builder(
+      itemBuilder: (BuildContext context, int index) {
+        CheckPoint checkPoint = _qrData[index];
+        IconData iconData = Icons.beenhere;
+        String title = checkPoint.code;
+        var formatter = new DateFormat("kk:mm:ss");
+        String subTitle = formatter.format(checkPoint.dateTime);
+        return ListTile(
+          leading: Icon(iconData),
+          title: Text(title),
+          subtitle: Text(subTitle),
+        );
+      },
+      itemCount: _qrData.length,
     );
   }
 
