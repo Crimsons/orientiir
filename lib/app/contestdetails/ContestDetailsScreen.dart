@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hybrid_app/app/login/LoginScreen.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
@@ -48,13 +47,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
   Widget buildAppBar() {
     return AppBar(
-      title: Text('Orienteerumise rakendus'),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.add),
-          onPressed: navigateToLogin,
-        ),
-      ],
+      title: Text(contest != null ? contest.name : ""),
     );
   }
 
@@ -111,16 +104,8 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
   }
 
-  void navigateToLogin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-    );
-  }
-
   void _showError(String message) {
     _showSnackBar(message);
-    setState(() {});
   }
 
   void _showSnackBar(String message) {
