@@ -26,12 +26,20 @@ class MainScreenState extends State<MainScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Orienteerumise rakendus"),
-      ),
-      body: Center(
-        child: Text('Tere, ' + user.name + "!"),
-      ),
+      appBar: buildAppBar(),
+      body: buildBody(),
+    );
+  }
+
+  AppBar buildAppBar() {
+    return AppBar(
+      title: Text("Orienteerumise rakendus"),
+    );
+  }
+
+  Center buildBody() {
+    return Center(
+      child: Text('Tere, ' + user.name + "!"),
     );
   }
 
@@ -39,14 +47,18 @@ class MainScreenState extends State<MainScreen> {
     var user = await dataSource.loadData();
 
     if (user == null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+      navigateToLogin();
     }
 
     setState(() {
       this.user = user;
     });
+  }
+
+  void navigateToLogin() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
   }
 }
