@@ -52,6 +52,30 @@ class MainScreenState extends State<MainScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           buildName(context),
+          SizedBox(
+            width: double.infinity,
+            child: RaisedButton(
+              child: Text("Loo uus võistlus"),
+              onPressed: (user != null && user.name != null)
+                  ? _onAddNewContestPressed
+                  : null,
+              color: Theme
+                  .of(context)
+                  .accentColor,
+              textColor: Colors.white,
+            ),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: RaisedButton(
+              child: Text("Vaata viimast"),
+              onPressed: null,
+              color: Theme
+                  .of(context)
+                  .accentColor,
+              textColor: Colors.white,
+            ),
+          ),
         ],
       ),
     );
@@ -59,10 +83,18 @@ class MainScreenState extends State<MainScreen> {
 
   Widget buildName(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: shouldShowNameInput
-          ? buildNameInput(context)
-          : buildNameWidget(context),
+      padding: EdgeInsets.only(left: 16, right: 16, bottom: 48),
+      child: Column(
+        children: <Widget>[
+          Text(
+            "Võistlejanimi:",
+            style: TextStyle(fontSize: 18),
+          ),
+          shouldShowNameInput
+              ? buildNameInput(context)
+              : buildNameWidget(context),
+        ],
+      ),
     );
   }
 
@@ -79,17 +111,14 @@ class MainScreenState extends State<MainScreen> {
         ),
         Flexible(
           flex: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: IconButton(
-              icon: Icon(Icons.edit),
-              tooltip: "Muuda nime",
-              onPressed: () {
-                setState(() {
-                  this.shouldShowNameInput = true;
-                });
-              },
-            ),
+          child: IconButton(
+            icon: Icon(Icons.edit),
+            tooltip: "Muuda nime",
+            onPressed: () {
+              setState(() {
+                this.shouldShowNameInput = true;
+              });
+            },
           ),
         ),
       ],
@@ -110,24 +139,21 @@ class MainScreenState extends State<MainScreen> {
                   return 'Palun sisesta võistlejanimi';
                 }
               },
-              decoration: InputDecoration(hintText: 'võistlejanimi'),
               textInputAction: TextInputAction.done,
               keyboardType: TextInputType.text,
               autovalidate: true,
+              autofocus: true,
               controller: textFieldController,
             ),
           ),
           Flexible(
             flex: 0,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 0),
-              child: IconButton(
-                icon: Icon(Icons.done),
-                tooltip: "Salvesta",
-                onPressed: () {
-                  onSaveNameClicked();
-                },
-              ),
+            child: IconButton(
+              icon: Icon(Icons.done),
+              tooltip: "Salvesta",
+              onPressed: () {
+                onSaveNameClicked();
+              },
             ),
           ),
         ],
@@ -157,6 +183,7 @@ class MainScreenState extends State<MainScreen> {
     var user = await userDataSource.loadData();
 
     setState(() {
+      textFieldController.text = user?.name ?? "";
       this.shouldShowNameInput = user == null;
       this.user = user;
     });
@@ -167,6 +194,8 @@ class MainScreenState extends State<MainScreen> {
     contest.checkpoints = [CheckPoint.fromCode("29")];
     _saveContest(contest);
   }
+
+  void _onOpenLastContestPressed() {}
 
   void _saveContest(Contest contest) {
     contestDataSource.save(contest);
