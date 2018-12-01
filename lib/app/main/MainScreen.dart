@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hybrid_app/app/contestdetails/ContestDetailsScreen.dart';
+import 'package:hybrid_app/app/main/NewContestDialog.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
-import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
 import 'package:hybrid_app/data/model/user/User.dart';
@@ -18,8 +18,8 @@ class MainScreenState extends State<MainScreen> {
   final ContestDataSource contestDataSource = LocalContestDataSource();
   final _formKey = GlobalKey<FormState>();
   final TextEditingController textFieldController = TextEditingController();
-  User user;
-  bool shouldShowNameInput = false;
+  User _user;
+  bool _showNameInput = false;
 
   @override
   void initState() {
@@ -32,10 +32,6 @@ class MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: _buildAppBar(),
       body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onAddNewContestPressed,
-        child: Icon(Icons.add),
-      ),
     );
   }
 
@@ -47,7 +43,7 @@ class MainScreenState extends State<MainScreen> {
 
   Widget _buildBody() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 96),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -55,9 +51,9 @@ class MainScreenState extends State<MainScreen> {
           SizedBox(
             width: double.infinity,
             child: RaisedButton(
-              child: Text("Loo uus võistlus"),
-              onPressed: (user != null && user.name != null)
-                  ? _onAddNewContestPressed
+              child: Text("Uus võistlus"),
+              onPressed: (_user != null && _user.name != null)
+                  ? _showNewContestDialog
                   : null,
               color: Theme
                   .of(context)
@@ -85,14 +81,13 @@ class MainScreenState extends State<MainScreen> {
     return Padding(
       padding: EdgeInsets.only(left: 16, right: 16, bottom: 48),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            "Võistlejanimi:",
-            style: TextStyle(fontSize: 18),
+            "Võistlejanimi",
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
-          shouldShowNameInput
-              ? buildNameInput(context)
-              : buildNameWidget(context),
+          _showNameInput ? buildNameInput(context) : buildNameWidget(context),
         ],
       ),
     );
@@ -104,9 +99,12 @@ class MainScreenState extends State<MainScreen> {
       children: <Widget>[
         Flexible(
           flex: 1,
-          child: Text(
-            user?.name ?? "",
-            style: TextStyle(fontSize: 16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Text(
+              _user?.name ?? "",
+              style: TextStyle(fontSize: 32),
+            ),
           ),
         ),
         Flexible(
@@ -116,7 +114,7 @@ class MainScreenState extends State<MainScreen> {
             tooltip: "Muuda nime",
             onPressed: () {
               setState(() {
-                this.shouldShowNameInput = true;
+                this._showNameInput = true;
               });
             },
           ),
@@ -140,6 +138,7 @@ class MainScreenState extends State<MainScreen> {
                 }
               },
               textInputAction: TextInputAction.done,
+              style: TextStyle(fontSize: 32, color: Colors.black),
               keyboardType: TextInputType.text,
               autovalidate: true,
               autofocus: true,
@@ -152,7 +151,7 @@ class MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.done),
               tooltip: "Salvesta",
               onPressed: () {
-                onSaveNameClicked();
+                _onSaveNameClicked();
               },
             ),
           ),
@@ -161,22 +160,22 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  void onSaveNameClicked() {
+  void _onSaveNameClicked() {
     if (_formKey.currentState.validate()) {
       setState(() {
         String name = textFieldController.text;
-        if (user == null) {
-          user = User.fromName(name);
+        if (_user == null) {
+          _user = User.fromName(name);
         }
-        user.name = name;
-        shouldShowNameInput = false;
-        saveUser();
+        _user.name = name;
+        _showNameInput = false;
+        _saveUser();
       });
     }
   }
 
-  void saveUser() async {
-    userDataSource.saveData(user);
+  void _saveUser() async {
+    userDataSource.saveData(_user);
   }
 
   void _loadUser() async {
@@ -184,24 +183,32 @@ class MainScreenState extends State<MainScreen> {
 
     setState(() {
       textFieldController.text = user?.name ?? "";
-      this.shouldShowNameInput = user == null;
-      this.user = user;
+      this._showNameInput = user == null;
+      this._user = user;
     });
   }
 
-  void _onAddNewContestPressed() {
-    Contest contest = Contest.fromName("Esimene võistlus", DateTime.now());
-    contest.checkpoints = [CheckPoint.fromCode("29")];
-    _saveContest(contest);
+  void _showNewContestDialog() async {
+    var name = await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) => NewContestDialog());
+
+    if (name != null) {
+      Contest contest = _createNewContest(name);
+      _saveContest(contest);
+      _navigateToContestDetails(contest);
+    }
   }
 
-  void _onOpenLastContestPressed() {}
+  Contest _createNewContest(String name) {
+    return Contest.fromName(name, DateTime.now());
+  }
 
   void _saveContest(Contest contest) {
     contestDataSource.save(contest);
   }
 
-  void _onListItemTapped(Contest contest) {
+  void _navigateToContestDetails(Contest contest) {
     Navigator.push(
       context,
       MaterialPageRoute(
