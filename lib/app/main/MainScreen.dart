@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hybrid_app/app/contestdetails/ContestDetailsScreen.dart';
-import 'package:hybrid_app/app/login/LoginScreen.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
+import 'package:hybrid_app/data/model/user/User.dart';
 import 'package:hybrid_app/data/model/user/UserDataSource.dart';
-import 'package:intl/intl.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -17,13 +16,15 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   final UserDataSource userDataSource = LocalUserDataSource();
   final ContestDataSource contestDataSource = LocalContestDataSource();
-  List<Contest> _contests = List();
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController textFieldController = TextEditingController();
+  User user;
+  bool shouldShowNameInput = false;
 
   @override
   void initState() {
     super.initState();
     _loadUser();
-    _loadContests();
   }
 
   @override
@@ -44,56 +45,126 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Center _buildBody() {
-    return Center(
-      child: ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          Contest contest = _contests[index];
-          IconData iconData = Icons.motorcycle;
-          String title = contest.name;
-          var formatter = new DateFormat("dd.MM.yyyy");
-          String subTitle = formatter.format(contest.date);
-          return ListTile(
-            leading: Icon(iconData),
-            title: Text(title),
-            subtitle: Text(subTitle),
-            onTap: () => _onListItemTapped(contest),
-          );
-        },
-        itemCount: _contests.length,
+  Widget _buildBody() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          buildName(context),
+        ],
       ),
     );
+  }
+
+  Widget buildName(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: shouldShowNameInput
+          ? buildNameInput(context)
+          : buildNameWidget(context),
+    );
+  }
+
+  Widget buildNameWidget(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Flexible(
+          flex: 1,
+          child: Text(
+            user?.name ?? "",
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+        Flexible(
+          flex: 0,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: IconButton(
+              icon: Icon(Icons.edit),
+              tooltip: "Muuda nime",
+              onPressed: () {
+                setState(() {
+                  this.shouldShowNameInput = true;
+                });
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildNameInput(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Flexible(
+            flex: 1,
+            child: TextFormField(
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Palun sisesta võistlejanimi';
+                }
+              },
+              decoration: InputDecoration(hintText: 'võistlejanimi'),
+              textInputAction: TextInputAction.done,
+              keyboardType: TextInputType.text,
+              autovalidate: true,
+              controller: textFieldController,
+            ),
+          ),
+          Flexible(
+            flex: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 0),
+              child: IconButton(
+                icon: Icon(Icons.done),
+                tooltip: "Salvesta",
+                onPressed: () {
+                  onSaveNameClicked();
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void onSaveNameClicked() {
+    if (_formKey.currentState.validate()) {
+      setState(() {
+        String name = textFieldController.text;
+        if (user == null) {
+          user = User.fromName(name);
+        }
+        user.name = name;
+        shouldShowNameInput = false;
+        saveUser();
+      });
+    }
+  }
+
+  void saveUser() async {
+    userDataSource.saveData(user);
   }
 
   void _loadUser() async {
     var user = await userDataSource.loadData();
 
-    if (user == null) {
-      _navigateToLogin();
-    }
-  }
-
-  void _navigateToLogin() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-    );
-  }
-
-  void _loadContests() async {
-    var contestList = await contestDataSource.loadAll();
-
     setState(() {
-      this._contests = contestList;
+      this.shouldShowNameInput = user == null;
+      this.user = user;
     });
   }
 
   void _onAddNewContestPressed() {
     Contest contest = Contest.fromName("Esimene võistlus", DateTime.now());
     contest.checkpoints = [CheckPoint.fromCode("29")];
-    setState(() {
-      this._contests.add(contest);
-    });
     _saveContest(contest);
   }
 
