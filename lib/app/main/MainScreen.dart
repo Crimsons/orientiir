@@ -42,38 +42,31 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildBody() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 96),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          buildName(context),
-          SizedBox(
-            width: double.infinity,
-            child: RaisedButton(
-              child: Text("Uus võistlus"),
-              onPressed: (_user != null && _user.name != null)
-                  ? _showNewContestDialog
-                  : null,
-              color: Theme
-                  .of(context)
-                  .accentColor,
-              textColor: Colors.white,
-            ),
+    return ListView(
+      padding: EdgeInsets.only(left: 16, right: 16, top: 148, bottom: 16),
+      children: <Widget>[
+        buildName(context),
+        SizedBox(
+          width: double.infinity,
+          child: RaisedButton(
+            child: Text("Uus võistlus"),
+            onPressed: (_user != null && _user.name != null)
+                ? _showNewContestDialog
+                : null,
+            color: Theme.of(context).accentColor,
+            textColor: Colors.white,
           ),
-          SizedBox(
-            width: double.infinity,
-            child: RaisedButton(
-              child: Text("Vaata viimast"),
-              onPressed: null,
-              color: Theme
-                  .of(context)
-                  .accentColor,
-              textColor: Colors.white,
-            ),
+        ),
+        SizedBox(
+          width: double.infinity,
+          child: RaisedButton(
+            child: Text("Vaata viimast"),
+            onPressed: null,
+            color: Theme.of(context).accentColor,
+            textColor: Colors.white,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
