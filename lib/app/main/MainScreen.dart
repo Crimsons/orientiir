@@ -45,7 +45,7 @@ class MainScreenState extends State<MainScreen> {
           NewCompetitionButton(onPressed: _showNewContestDialog),
           LastCompetitionButton(
               onPressed:
-              _lastContest != null ? _navigateToLastContestDetails : null),
+                  _lastContest != null ? _navigateToLastContestDetails : null),
         ],
       ),
     );
@@ -58,8 +58,11 @@ class MainScreenState extends State<MainScreen> {
 
     if (name != null) {
       Contest contest = _createNewContest(name);
-      _saveContest(contest);
-      _navigateToContestDetails(contest);
+      setState(() {
+        _lastContest = contest;
+        _saveContest(contest);
+        _navigateToContestDetails(contest);
+      });
     }
   }
 

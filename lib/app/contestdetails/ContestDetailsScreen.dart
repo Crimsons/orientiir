@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hybrid_app/app/contestdetails/ListItem.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
-import 'package:intl/intl.dart';
 
 class ContestDetailsScreen extends StatefulWidget {
   final String contestId;
@@ -15,21 +15,25 @@ class ContestDetailsScreen extends StatefulWidget {
   ContestDetailsScreen({Key key, @required this.contestId}) : super(key: key);
 
   @override
-  State createState() => ContestDetailsState(contestId);
+  State createState() => ContestDetailsState();
 }
 
 class ContestDetailsState extends State<ContestDetailsScreen> {
   final ContestDataSource dataSource = LocalContestDataSource();
-  final String contestId;
-  Contest contest;
+  Contest contest = new Contest("", DateTime.now(), "", List());
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-  ContestDetailsState(this.contestId) : super();
 
   @override
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  void _loadData() async {
+    var contest = await dataSource.load(widget.contestId);
+    setState(() {
+      this.contest = contest;
+    });
   }
 
   @override
@@ -40,44 +44,16 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         onPressed: _scan,
         child: Icon(Icons.add),
       ),
-      appBar: buildAppBar(),
-      body: buildBody(),
-    );
-  }
-
-  Widget buildAppBar() {
-    return AppBar(
-      title: Text(contest != null ? contest.name : ""),
-    );
-  }
-
-  Widget buildBody() {
-    if (contest == null) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    } else {
-      return buildListView();
-    }
-  }
-
-  Widget buildListView() {
-    return ListView.builder(
-      itemBuilder: (BuildContext context, int index) {
-        CheckPoint checkPoint = contest.getCheckPoints()[index];
-        IconData iconData = Icons.beenhere;
-        String title = checkPoint.code;
-        var formatter = DateFormat("kk:mm:ss");
-        String subTitle = formatter.format(checkPoint.dateTime);
-        return ListTile(
-          leading: Icon(iconData),
-          title: Text(title),
-          subtitle: Text(subTitle),
-        );
-      },
-      itemCount: contest
-          .getCheckPoints()
-          .length,
+      appBar: AppBar(
+        title: Text(contest.name),
+      ),
+      body: ListView.builder(
+        itemBuilder: (BuildContext context, int index) {
+          CheckPoint checkPoint = contest.getCheckPoints()[index];
+          return ListItem(checkPoint: checkPoint);
+        },
+        itemCount: contest.getCheckPoints().length,
+      ),
     );
   }
 
@@ -104,6 +80,8 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
   }
 
+  void _saveData() async => dataSource.save(contest);
+
   void _showError(String message) {
     _showSnackBar(message);
   }
@@ -117,13 +95,4 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
-
-  void _loadData() async {
-    var contest = await dataSource.load(contestId);
-    setState(() {
-      this.contest = contest;
-    });
-  }
-
-  void _saveData() async => dataSource.save(contest);
 }
