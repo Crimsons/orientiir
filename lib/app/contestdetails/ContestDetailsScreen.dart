@@ -50,7 +50,14 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
       body: ListView.builder(
         itemBuilder: (BuildContext context, int index) {
           CheckPoint checkPoint = contest.getCheckPoints()[index];
-          return ListItem(checkPoint: checkPoint);
+          CheckPoint previousCheckPoint;
+          if (index > 0) {
+            previousCheckPoint = contest.getCheckPoints()[index - 1];
+          }
+          return ListItem(
+            checkPoint: checkPoint,
+            previousCheckPoint: previousCheckPoint,
+          );
         },
         itemCount: contest.getCheckPoints().length,
       ),

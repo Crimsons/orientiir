@@ -5,8 +5,9 @@ import 'package:intl/intl.dart';
 
 class ListItem extends StatelessWidget {
   final CheckPoint checkPoint;
+  final CheckPoint previousCheckPoint;
 
-  ListItem({this.checkPoint});
+  ListItem({this.checkPoint, this.previousCheckPoint});
 
   @override
   Widget build(BuildContext context) {
@@ -24,21 +25,21 @@ class ListItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(_titleString(checkPoint)),
-                Text(_typeString(checkPoint)),
-                Text(_dateString(checkPoint)),
+                Text(_titleString),
+                Text(_typeString),
+                Text(_dateString),
+                _buildLapTimeText(),
               ],
             ),
           ],
         ));
   }
 
-  String _titleString(CheckPoint checkPoint) {
-    String title = "Kood: ${checkPoint.code}";
-    return title;
+  String get _titleString {
+    return "Kood: ${checkPoint.code}";
   }
 
-  String _typeString(CheckPoint checkPoint) {
+  String get _typeString {
     String type = "Tüüp: ";
     switch (checkPoint.type) {
       case CheckPointType.checkpoint:
@@ -63,9 +64,26 @@ class ListItem extends StatelessWidget {
     return type;
   }
 
-  String _dateString(CheckPoint checkPoint) {
+  String get _dateString {
     var formatter = DateFormat("kk:mm:ss");
-    String dateTime = "Kellaaeg: ${formatter.format(checkPoint.dateTime)}";
-    return dateTime;
+    return "Kellaaeg: ${formatter.format(checkPoint.dateTime)}";
+  }
+
+  Widget _buildLapTimeText() {
+    if (previousCheckPoint != null) {
+      return Text(_lapTimeString);
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  String get _lapTimeString {
+    final duration =
+    checkPoint.dateTime.difference(previousCheckPoint.dateTime);
+    final durationString = duration
+        .toString()
+        .split(".")
+        .first;
+    return "Etapiaeg: $durationString";
   }
 }
