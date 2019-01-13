@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hybrid_app/app/main/MainScreen.dart';
+import 'package:hybrid_app/app/splash/SplashScreen.dart';
 
 void main() {
   runApp(new MyApp());
@@ -15,7 +15,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return new MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MainScreen(),
+      home: SplashScreen(),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalContestDataSource implements ContestDataSource {
   static const KEY = "key_contests";
+  static const KEY_ACTIVE_CONTEST_ID = "key_active_contest_id";
 
   Future<List<Contest>> loadAll() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -28,8 +29,7 @@ class LocalContestDataSource implements ContestDataSource {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var contentsList = _loadAll(prefs);
 
-    return contentsList.firstWhere((item) => item.id == id,
-        orElse: () => null);
+    return contentsList.firstWhere((item) => item.id == id, orElse: () => null);
   }
 
   void save(Contest contest) async {
@@ -42,5 +42,17 @@ class LocalContestDataSource implements ContestDataSource {
 
   void _save(SharedPreferences prefs, List contests) {
     prefs.setString(KEY, json.encode(contests));
+  }
+
+  @override
+  Future<String> loadActiveId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(KEY_ACTIVE_CONTEST_ID);
+  }
+
+  @override
+  void saveActiveContestId(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString(KEY_ACTIVE_CONTEST_ID, id);
   }
 }

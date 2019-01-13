@@ -27,9 +27,11 @@ class MainScreenState extends State<MainScreen> {
   void _loadLastContest() async {
     var contests = await contestDataSource.loadAll();
 
-    setState(() {
-      _lastContest = contests.last;
-    });
+    if (contests.isNotEmpty) {
+      setState(() {
+        _lastContest = contests.last;
+      });
+    }
   }
 
   @override
@@ -72,10 +74,11 @@ class MainScreenState extends State<MainScreen> {
 
   void _saveContest(Contest contest) {
     contestDataSource.save(contest);
+    contestDataSource.saveActiveContestId(contest.id);
   }
 
   void _navigateToContestDetails(Contest contest) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
           builder: (context) => ContestDetailsScreen(contestId: contest.id)),

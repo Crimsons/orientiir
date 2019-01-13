@@ -10,6 +10,11 @@ class User {
 
   User(this.id, this.name);
 
+  User.empty() {
+    this.id = "";
+    this.name = "";
+  }
+
   User.fromName(String name) {
     this.id = Uuid().v4();
     this.name = name;

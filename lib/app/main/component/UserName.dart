@@ -92,7 +92,7 @@ class _UserNameState extends State<UserName> {
 
   // state
   final TextEditingController textFieldController = TextEditingController();
-  User _user;
+  User _user = User.empty();
   bool _showNameInput = false;
 
   @override

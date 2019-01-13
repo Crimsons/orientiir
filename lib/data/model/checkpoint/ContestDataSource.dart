@@ -6,4 +6,8 @@ abstract class ContestDataSource {
   Future<Contest> load(String id);
 
   void save(Contest contest);
+
+  Future<String> loadActiveId();
+
+  void saveActiveContestId(String id);
 }
