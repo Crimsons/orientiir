@@ -42,7 +42,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
       key: _scaffoldKey,
       floatingActionButton: FloatingActionButton(
         onPressed: _scan,
-        child: Icon(Icons.add),
+        child: Icon(Icons.camera_alt),
       ),
       appBar: AppBar(
         title: Text(contest.name),
