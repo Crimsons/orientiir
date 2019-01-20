@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 
-part 'package:hybrid_app/data/model/user/User.g.dart';
+part 'User.g.dart';
 
 @JsonSerializable()
 class User {

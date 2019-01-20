@@ -2,7 +2,7 @@ import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 
-part 'package:hybrid_app/data/model/checkpoint/Contest.g.dart';
+part 'Contest.g.dart';
 
 @JsonSerializable()
 class Contest {

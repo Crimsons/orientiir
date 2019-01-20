@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
@@ -6,11 +8,18 @@ import 'package:flutter/services.dart';
 import 'package:hybrid_app/app/contestdetails/ListItem.dart';
 import 'package:hybrid_app/app/main/MainScreen.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
+import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
+import 'package:hybrid_app/data/model/result/Result.dart';
+import 'package:hybrid_app/data/model/user/UserDataSource.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ContestDetailsScreen extends StatefulWidget {
+  final ContestDataSource dataSource = LocalContestDataSource();
+  final UserDataSource userDataSource = LocalUserDataSource();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final String contestId;
 
   ContestDetailsScreen({Key key, @required this.contestId}) : super(key: key);
@@ -20,9 +29,7 @@ class ContestDetailsScreen extends StatefulWidget {
 }
 
 class ContestDetailsState extends State<ContestDetailsScreen> {
-  final ContestDataSource dataSource = LocalContestDataSource();
   Contest contest = new Contest("", DateTime.now(), "", List());
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -31,7 +38,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
   }
 
   void _loadData() async {
-    var contest = await dataSource.load(widget.contestId);
+    var contest = await widget.dataSource.load(widget.contestId);
     setState(() {
       this.contest = contest;
     });
@@ -46,7 +53,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
   }
 
   void _exitContest() async {
-    await dataSource.clearActiveContestId();
+    await widget.dataSource.clearActiveContestId();
     _navigateToMain();
   }
 
@@ -61,7 +68,14 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
   }
 
-  void _sendResults() {}
+  void _sendResults() async {
+    final user = await widget.userDataSource.loadData();
+    final result = Result.create(user, contest);
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path;
+    var file = File("$path/${result.userName.toLowerCase()}.json");
+    await file.writeAsString(json.encode(result), flush: true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +115,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     );
 
     return new Scaffold(
-      key: _scaffoldKey,
+      key: widget._scaffoldKey,
       floatingActionButton: fab,
       appBar: appBar,
       body: list,
@@ -115,11 +129,12 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         _showError("qrcode is null");
         return;
       }
-      CheckPoint checkPoint = CheckPoint.fromCode(code);
+      CheckPoint checkPoint = CheckPoint.create(
+          code, DateTime.now(), 123456789);
       setState(() {
         contest.addCheckPoint(checkPoint);
-        _saveData();
       });
+      _saveData();
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
         _showError("Access denied");
@@ -133,7 +148,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
   }
 
-  void _saveData() async => await dataSource.save(contest);
+  void _saveData() async => await widget.dataSource.save(contest);
 
   void _showError(String message) {
     _showSnackBar(message);
@@ -146,7 +161,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
       duration: Duration(seconds: 2),
     );
 
-    _scaffoldKey.currentState.showSnackBar(snackBar);
+    widget._scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }
 
