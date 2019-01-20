@@ -5,9 +5,11 @@ abstract class ContestDataSource {
 
   Future<Contest> load(String id);
 
-  void save(Contest contest);
+  Future<bool> save(Contest contest);
 
-  Future<String> loadActiveId();
+  Future<String> loadActiveContestId();
 
-  void saveActiveContestId(String id);
+  Future<bool> saveActiveContestId(String id);
+
+  Future<bool> clearActiveContestId();
 }

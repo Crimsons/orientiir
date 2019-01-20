@@ -32,27 +32,33 @@ class LocalContestDataSource implements ContestDataSource {
     return contentsList.firstWhere((item) => item.id == id, orElse: () => null);
   }
 
-  void save(Contest contest) async {
+  Future<bool> save(Contest contest) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var contests = _loadAll(prefs);
     contests.removeWhere((item) => item.id == contest.id);
     contests.add(contest);
-    _save(prefs, contests);
+    return _save(prefs, contests);
   }
 
-  void _save(SharedPreferences prefs, List contests) {
-    prefs.setString(KEY, json.encode(contests));
+  Future<bool> _save(SharedPreferences prefs, List contests) {
+    return prefs.setString(KEY, json.encode(contests));
   }
 
   @override
-  Future<String> loadActiveId() async {
+  Future<String> loadActiveContestId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(KEY_ACTIVE_CONTEST_ID);
   }
 
   @override
-  void saveActiveContestId(String id) async {
+  Future<bool> saveActiveContestId(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString(KEY_ACTIVE_CONTEST_ID, id);
+    return prefs.setString(KEY_ACTIVE_CONTEST_ID, id);
+  }
+
+  @override
+  Future<bool> clearActiveContestId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.remove(KEY_ACTIVE_CONTEST_ID);
   }
 }

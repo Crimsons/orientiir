@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void continueToApp() async {
-    final activeContestId = await contestDataSource.loadActiveId();
+    final activeContestId = await contestDataSource.loadActiveContestId();
     if (activeContestId != null) {
       navigateToContest(context, activeContestId);
     } else {

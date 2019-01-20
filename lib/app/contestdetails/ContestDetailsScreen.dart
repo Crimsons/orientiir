@@ -4,6 +4,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hybrid_app/app/contestdetails/ListItem.dart';
+import 'package:hybrid_app/app/main/MainScreen.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
@@ -36,6 +37,32 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     });
   }
 
+  void _handleMenuItemPressed(MenuButton selected) {
+    if (selected == MenuButton.send_results) {
+      _sendResults();
+    } else if (selected == MenuButton.exit) {
+      _exitContest();
+    }
+  }
+
+  void _exitContest() async {
+    await dataSource.clearActiveContestId();
+    _navigateToMain();
+  }
+
+  void _navigateToMain() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
+    }
+  }
+
+  void _sendResults() {}
+
   @override
   Widget build(BuildContext context) {
     Widget fab = FloatingActionButton(
@@ -43,9 +70,20 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
       child: Icon(Icons.camera_alt),
     );
 
-    Widget appBar = AppBar(
-      title: Text(contest.name),
-    );
+    Widget appBar = AppBar(title: Text(contest.name), actions: <Widget>[
+      PopupMenuButton(
+          onSelected: _handleMenuItemPressed,
+          itemBuilder: (BuildContext context) => [
+                const PopupMenuItem(
+                  value: MenuButton.send_results,
+                  child: Text("Saada tulemused"),
+                ),
+                const PopupMenuItem(
+                  value: MenuButton.exit,
+                  child: Text("Lõpeta"),
+                ),
+              ])
+    ]);
 
     Widget list = ListView.builder(
       itemBuilder: (BuildContext context, int index) {
@@ -59,9 +97,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
           previousCheckPoint: previousCheckPoint,
         );
       },
-      itemCount: contest
-          .getCheckPoints()
-          .length,
+      itemCount: contest.getCheckPoints().length,
     );
 
     return new Scaffold(
@@ -80,8 +116,10 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         return;
       }
       CheckPoint checkPoint = CheckPoint.fromCode(code);
-      setState(() => contest.addCheckPoint(checkPoint)); 
-      _saveData();
+      setState(() {
+        contest.addCheckPoint(checkPoint);
+        _saveData();
+      });
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
         _showError("Access denied");
@@ -95,7 +133,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
   }
 
-  void _saveData() async => dataSource.save(contest);
+  void _saveData() async => await dataSource.save(contest);
 
   void _showError(String message) {
     _showSnackBar(message);
@@ -111,3 +149,5 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     _scaffoldKey.currentState.showSnackBar(snackBar);
   }
 }
+
+enum MenuButton { send_results, exit }

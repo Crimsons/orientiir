@@ -62,9 +62,9 @@ class MainScreenState extends State<MainScreen> {
       Contest contest = _createNewContest(name);
       setState(() {
         _lastContest = contest;
-        _saveContest(contest);
-        _navigateToContestDetails(contest);
       });
+      await _saveContest(contest);
+      _navigateToContestDetails(contest);
     }
   }
 
@@ -72,9 +72,9 @@ class MainScreenState extends State<MainScreen> {
     return Contest.fromName(name, DateTime.now());
   }
 
-  void _saveContest(Contest contest) {
-    contestDataSource.save(contest);
-    contestDataSource.saveActiveContestId(contest.id);
+  _saveContest(Contest contest) async {
+    await contestDataSource.save(contest);
+    await contestDataSource.saveActiveContestId(contest.id);
   }
 
   void _navigateToContestDetails(Contest contest) {
