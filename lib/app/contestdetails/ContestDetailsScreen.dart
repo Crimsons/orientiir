@@ -38,29 +38,37 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Widget fab = FloatingActionButton(
+      onPressed: _scan,
+      child: Icon(Icons.camera_alt),
+    );
+
+    Widget appBar = AppBar(
+      title: Text(contest.name),
+    );
+
+    Widget list = ListView.builder(
+      itemBuilder: (BuildContext context, int index) {
+        CheckPoint checkPoint = contest.getCheckPoints()[index];
+        CheckPoint previousCheckPoint;
+        if (index > 0) {
+          previousCheckPoint = contest.getCheckPoints()[index - 1];
+        }
+        return ListItem(
+          checkPoint: checkPoint,
+          previousCheckPoint: previousCheckPoint,
+        );
+      },
+      itemCount: contest
+          .getCheckPoints()
+          .length,
+    );
+
     return new Scaffold(
       key: _scaffoldKey,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _scan,
-        child: Icon(Icons.camera_alt),
-      ),
-      appBar: AppBar(
-        title: Text(contest.name),
-      ),
-      body: ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          CheckPoint checkPoint = contest.getCheckPoints()[index];
-          CheckPoint previousCheckPoint;
-          if (index > 0) {
-            previousCheckPoint = contest.getCheckPoints()[index - 1];
-          }
-          return ListItem(
-            checkPoint: checkPoint,
-            previousCheckPoint: previousCheckPoint,
-          );
-        },
-        itemCount: contest.getCheckPoints().length,
-      ),
+      floatingActionButton: fab,
+      appBar: appBar,
+      body: list,
     );
   }
 
@@ -72,7 +80,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         return;
       }
       CheckPoint checkPoint = CheckPoint.fromCode(code);
-      setState(() => contest.addCheckPoint(checkPoint));
+      setState(() => contest.addCheckPoint(checkPoint)); 
       _saveData();
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
