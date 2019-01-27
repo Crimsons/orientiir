@@ -15,6 +15,7 @@ import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
 import 'package:hybrid_app/data/model/result/Result.dart';
 import 'package:hybrid_app/data/model/user/UserDataSource.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 
 class ContestDetailsScreen extends StatefulWidget {
   final ContestDataSource dataSource = LocalContestDataSource();
@@ -75,6 +76,8 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     final path = directory.path;
     var file = File("$path/${result.userName.toLowerCase()}.json");
     await file.writeAsString(json.encode(result), flush: true);
+
+    Share.shareFile(file);
   }
 
   @override

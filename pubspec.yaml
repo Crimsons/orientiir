@@ -26,6 +26,12 @@ dependencies:
   crypto: ^2.0.6
   intl: 0.15.7
 
+  share:
+      git:
+        url: https://github.com/pboos/plugins.git
+        path: packages/share
+        ref: feature/shareFile
+
 
 dev_dependencies:
   build_runner: ^1.0.0
