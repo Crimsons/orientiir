@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hybrid_app/app/contestdetails/ListItem.dart';
 import 'package:hybrid_app/app/main/MainScreen.dart';
+import 'package:hybrid_app/conf/Conf.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
@@ -22,6 +23,7 @@ class ContestDetailsScreen extends StatefulWidget {
   final UserDataSource userDataSource = LocalUserDataSource();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final String contestId;
+  final JsonEncoder jsonEncoder = JsonEncoder.withIndent(jsonIndent);
 
   ContestDetailsScreen({Key key, @required this.contestId}) : super(key: key);
 
@@ -75,7 +77,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
     var file = File("$path/${result.userName.toLowerCase()}.json");
-    await file.writeAsString(json.encode(result), flush: true);
+    await file.writeAsString(widget.jsonEncoder.convert(result), flush: true);
 
     Share.shareFile(file);
   }

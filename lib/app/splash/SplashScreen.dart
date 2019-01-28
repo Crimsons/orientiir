@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hybrid_app/app/contestdetails/ContestDetailsScreen.dart';
 import 'package:hybrid_app/app/main/MainScreen.dart';
+import 'package:hybrid_app/conf/Conf.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
 
@@ -12,13 +13,12 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  static const int SPLASH_DURATION = 1000;
   final ContestDataSource contestDataSource = LocalContestDataSource();
 
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(milliseconds: SPLASH_DURATION), continueToApp);
+    Timer(const Duration(milliseconds: splashDuration), continueToApp);
   }
 
   void continueToApp() async {
