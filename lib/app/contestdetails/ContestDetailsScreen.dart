@@ -76,10 +76,25 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     final result = Result.create(user, contest);
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
-    var file = File("$path/${result.userName.toLowerCase()}.json");
+    var file = File(_getFilename(path, user.name));
     await file.writeAsString(widget.jsonEncoder.convert(result), flush: true);
 
     Share.shareFile(file);
+  }
+
+  String _getFilename(String path, String userName) {
+    var fileName = userName
+        .trim()
+        .toLowerCase()
+        .replaceAll("õ", "6")
+        .replaceAll("ä", "a")
+        .replaceAll("ö", "o")
+        .replaceAll("ü", "y")
+        .replaceAll("š", "s")
+        .replaceAll("ž", "z")
+        .replaceAll(new RegExp("[^0-9a-zA-Z_-]"), "");
+
+    return "$path/$fileName.json";
   }
 
   @override
@@ -134,8 +149,8 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         _showError("qrcode is null");
         return;
       }
-      CheckPoint checkPoint = CheckPoint.create(
-          code, DateTime.now(), 123456789);
+      CheckPoint checkPoint =
+      CheckPoint.create(code, DateTime.now(), 123456789);
       setState(() {
         contest.addCheckPoint(checkPoint);
       });
