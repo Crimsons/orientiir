@@ -28,6 +28,7 @@ class ListItem extends StatelessWidget {
                 Text(_titleString),
                 Text(_typeString),
                 Text(_dateString),
+                Text(_timestampString),
                 _buildLapTimeText(),
               ],
             ),
@@ -67,6 +68,10 @@ class ListItem extends StatelessWidget {
   String get _dateString {
     var formatter = DateFormat("kk:mm:ss");
     return "Kellaaeg: ${formatter.format(checkPoint.dateTime)}";
+  }
+
+  String get _timestampString {
+    return "Ajatempel: ${checkPoint.timestamp}";
   }
 
   Widget _buildLapTimeText() {

@@ -17,6 +17,7 @@ import 'package:hybrid_app/data/model/result/Result.dart';
 import 'package:hybrid_app/data/model/user/UserDataSource.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
+import 'package:uptime/uptime.dart';
 
 class ContestDetailsScreen extends StatefulWidget {
   final ContestDataSource dataSource = LocalContestDataSource();
@@ -149,11 +150,14 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         _showError("qrcode is null");
         return;
       }
-      CheckPoint checkPoint =
-      CheckPoint.create(code, DateTime.now(), 123456789);
+
+      var uptime = await getSystemUptime();
+      CheckPoint checkPoint = CheckPoint.create(code, DateTime.now(), uptime);
+
       setState(() {
         contest.addCheckPoint(checkPoint);
       });
+
       _saveData();
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
@@ -166,6 +170,17 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     } catch (e) {
       _showError('Unknown error: $e');
     }
+  }
+
+  Future<int> getSystemUptime() async {
+    int uptime;
+    try {
+      uptime = await Uptime.uptime;
+    } on PlatformException {
+      // todo add logging
+    }
+
+    return uptime;
   }
 
   void _saveData() async => await widget.dataSource.save(contest);

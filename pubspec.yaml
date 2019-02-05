@@ -25,6 +25,7 @@ dependencies:
   barcode_scan: ^0.0.7
   crypto: ^2.0.6
   intl: 0.15.7
+  uptime: ^0.0.1
 
   share:
       git:
