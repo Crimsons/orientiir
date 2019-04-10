@@ -37,7 +37,7 @@ build/
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 **/android/key.properties
-**/android/release_keystore
+**/android/release_key.jks
 
 # iOS/XCode related
 **/ios/**/*.mode1v3
