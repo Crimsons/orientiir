@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:hybrid_app/app/contestdetails/ListItem.dart';
 import 'package:hybrid_app/app/main/MainScreen.dart';
@@ -34,6 +35,7 @@ class ContestDetailsScreen extends StatefulWidget {
 
 class ContestDetailsState extends State<ContestDetailsScreen> {
   Contest contest = new Contest("", DateTime.now(), "", List());
+  ScrollController _scrollController = new ScrollController();
 
   @override
   void initState() {
@@ -120,7 +122,8 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
               ])
     ]);
 
-    Widget list = ListView.builder(
+    Widget list = ListView.separated(
+      controller: _scrollController,
       itemBuilder: (BuildContext context, int index) {
         CheckPoint checkPoint = contest.getCheckPoints()[index];
         CheckPoint previousCheckPoint;
@@ -133,6 +136,12 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         );
       },
       itemCount: contest.getCheckPoints().length,
+      separatorBuilder: (context, index) =>
+          Divider(
+            color: Colors.grey,
+            height: 1,
+            indent: 16,
+          ),
     );
 
     return new Scaffold(
@@ -156,6 +165,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
       setState(() {
         contest.addCheckPoint(checkPoint);
+        scrollToBottom();
       });
 
       _saveData();
@@ -165,9 +175,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
       } else {
         _showError('Unknown error: $e');
       }
-    } on FormatException {
-      _showError('User pressed back');
-    } catch (e) {
+    } on FormatException {} catch (e) {
       _showError('Unknown error: $e');
     }
   }
@@ -181,6 +189,16 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
 
     return uptime;
+  }
+
+  void scrollToBottom() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   void _saveData() async => await widget.dataSource.save(contest);

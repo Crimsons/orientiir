@@ -18,65 +18,108 @@ class ListItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Icon(Icons.beenhere),
-            ),
+                padding: const EdgeInsets.only(right: 16.0),
+                child: _buildIcon()),
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(_titleString),
-                Text(_typeString),
-                Text(_dateString),
-                Text(_timestampString),
-                _buildLapTimeText(),
+                Text(
+                  _titleString,
+                  style: TextStyle(fontSize: 22),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(right: 32.0),
+                        child: Text(
+                          _dateString,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                      _buildLapTimeText(),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],
         ));
   }
 
-  String get _titleString {
-    return "Kood: ${checkPoint.code}";
+  Icon _buildIcon() {
+    switch (checkPoint.type) {
+      case CheckPointType.start:
+        return Icon(
+          Icons.trip_origin,
+          color: Colors.green,
+          size: 30,
+        );
+      case CheckPointType.finish:
+        return Icon(
+          Icons.flag,
+          color: Colors.green,
+          size: 30,
+        );
+      case CheckPointType.checkpoint:
+        return Icon(
+          Icons.location_on,
+          color: Colors.green,
+          size: 30,
+        );
+      case CheckPointType.extra:
+        return Icon(
+          Icons.stars,
+          color: Colors.green,
+          size: 30,
+        );
+      case CheckPointType.auxiliary:
+        return Icon(
+          Icons.location_on,
+          color: Colors.green,
+          size: 30,
+        );
+      case CheckPointType.unknown:
+      default:
+        return Icon(
+          Icons.error_outline,
+          color: Colors.red,
+          size: 30,
+        );
+    }
   }
 
-  String get _typeString {
-    String type = "Tüüp: ";
+  String get _titleString {
     switch (checkPoint.type) {
-      case CheckPointType.checkpoint:
-        type += "Kontrollpunkt";
-        break;
       case CheckPointType.start:
-        type += "Start";
-        break;
+        return "START";
       case CheckPointType.finish:
-        type += "Finish";
-        break;
+        return "FINIŠ";
+      case CheckPointType.checkpoint:
+        return "KP " + checkPoint.humanReadableCode;
       case CheckPointType.extra:
-        type += "Lisakatse";
-        break;
+        return "LK " + checkPoint.humanReadableCode;
       case CheckPointType.auxiliary:
-        type += "Reserveeritud";
-        break;
+        return "RESERVEERITUD";
       case CheckPointType.unknown:
-        type += "Tundmatu";
-        break;
+      default:
+        return "TUNDMATU";
     }
-    return type;
   }
 
   String get _dateString {
     var formatter = DateFormat("kk:mm:ss");
-    return "Kellaaeg: ${formatter.format(checkPoint.dateTime)}";
-  }
-
-  String get _timestampString {
-    return "Ajatempel: ${checkPoint.timestamp}";
+    return "${formatter.format(checkPoint.dateTime)}";
   }
 
   Widget _buildLapTimeText() {
     if (previousCheckPoint != null) {
-      return Text(_lapTimeString);
+      return Text(
+        _lapTimeString,
+        style: TextStyle(fontSize: 16),
+      );
     } else {
       return SizedBox.shrink();
     }
@@ -89,6 +132,6 @@ class ListItem extends StatelessWidget {
         .toString()
         .split(".")
         .first;
-    return "Etapiaeg: $durationString";
+    return "+$durationString";
   }
 }

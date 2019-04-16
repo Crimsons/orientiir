@@ -33,6 +33,24 @@ class CheckPoint {
     }
   }
 
+  String get humanReadableCode {
+    switch (this.type) {
+      case CheckPointType.start:
+        return this.code;
+      case CheckPointType.finish:
+        return this.code;
+      case CheckPointType.checkpoint:
+        return this.code.split("%")[0];
+      case CheckPointType.extra:
+        return this.code.split("*")[0];
+      case CheckPointType.auxiliary:
+        return this.code.split("\$")[0];
+      case CheckPointType.unknown:
+      default:
+        return this.code;
+    }
+  }
+
   factory CheckPoint.fromJson(Map<String, dynamic> json) =>
       _$CheckPointFromJson(json);
 
