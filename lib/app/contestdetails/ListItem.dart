@@ -6,8 +6,9 @@ import 'package:intl/intl.dart';
 class ListItem extends StatelessWidget {
   final CheckPoint checkPoint;
   final CheckPoint previousCheckPoint;
+  final Function onDeletePress;
 
-  ListItem({this.checkPoint, this.previousCheckPoint});
+  ListItem({this.checkPoint, this.previousCheckPoint, this.onDeletePress});
 
   @override
   Widget build(BuildContext context) {
@@ -20,40 +21,64 @@ class ListItem extends StatelessWidget {
             Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: _buildIcon()),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  _titleString,
-                  style: TextStyle(fontSize: 22),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Row(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(right: 32.0),
-                        child: Text(
-                          _dateString,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                      _buildLapTimeText(),
-                    ],
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    _titleString,
+                    style: TextStyle(fontSize: 22),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 32.0),
+                          child: Text(
+                            _dateString,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        _buildLapTimeText(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
+            buildPopupMenu()
           ],
         ));
+  }
+
+  PopupMenuButton<MenuButton> buildPopupMenu() {
+    return PopupMenuButton(
+      onSelected: (MenuButton selected) {
+        if (selected == MenuButton.delete) {
+          this.onDeletePress(checkPoint);
+        }
+      },
+      itemBuilder: (BuildContext context) =>
+      [
+        const PopupMenuItem(
+          value: MenuButton.delete,
+          child: const ListTile(
+            leading: const Icon(Icons.delete),
+            title: const Text('Kustuta'),
+          ),
+        ),
+      ],
+      tooltip: "Valikud",
+    );
   }
 
   Icon _buildIcon() {
     switch (checkPoint.type) {
       case CheckPointType.start:
         return Icon(
-          Icons.trip_origin,
+          Icons.play_circle_filled,
           color: Colors.green,
           size: 30,
         );
@@ -135,3 +160,5 @@ class ListItem extends StatelessWidget {
     return "+$durationString";
   }
 }
+
+enum MenuButton { delete }

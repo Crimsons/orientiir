@@ -36,6 +36,14 @@ class Contest {
     checkpoints.add(checkPoint);
   }
 
+  void removeCheckPoint(CheckPoint checkPoint) {
+    if (checkpoints == null) {
+      checkpoints = List();
+    }
+
+    checkpoints.remove(checkPoint);
+  }
+
   factory Contest.fromJson(Map<String, dynamic> json) =>
       _$ContestFromJson(json);
 

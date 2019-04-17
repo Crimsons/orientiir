@@ -109,17 +109,20 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
     Widget appBar = AppBar(title: Text(contest.name), actions: <Widget>[
       PopupMenuButton(
-          onSelected: _handleMenuItemPressed,
-          itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
-                  value: MenuButton.send_results,
-                  child: Text("Saada tulemused"),
-                ),
-                const PopupMenuItem(
-                  value: MenuButton.exit,
-                  child: Text("Lõpeta"),
-                ),
-              ])
+        onSelected: _handleMenuItemPressed,
+        itemBuilder: (BuildContext context) =>
+        [
+          const PopupMenuItem(
+            value: MenuButton.send_results,
+            child: Text("Saada tulemused"),
+          ),
+          const PopupMenuItem(
+            value: MenuButton.exit,
+            child: Text("Lõpeta"),
+          ),
+        ],
+        tooltip: "Menüü",
+      )
     ]);
 
     Widget list = ListView.separated(
@@ -131,9 +134,9 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
           previousCheckPoint = contest.getCheckPoints()[index - 1];
         }
         return ListItem(
-          checkPoint: checkPoint,
-          previousCheckPoint: previousCheckPoint,
-        );
+            checkPoint: checkPoint,
+            previousCheckPoint: previousCheckPoint,
+            onDeletePress: this.removeCheckPoint);
       },
       itemCount: contest.getCheckPoints().length,
       separatorBuilder: (context, index) =>
@@ -142,6 +145,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
             height: 1,
             indent: 16,
           ),
+      padding: EdgeInsets.only(bottom: 70),
     );
 
     return new Scaffold(
@@ -152,6 +156,22 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     );
   }
 
+  void addCheckPoint(String code, DateTime dateTime, int uptime) {
+    CheckPoint checkPoint = CheckPoint.create(code, dateTime, uptime);
+    setState(() {
+      contest.addCheckPoint(checkPoint);
+      scrollToBottom();
+    });
+    _saveData();
+  }
+
+  void removeCheckPoint(CheckPoint checkPoint) {
+    setState(() {
+      contest.removeCheckPoint(checkPoint);
+    });
+    _saveData();
+  }
+
   Future _scan() async {
     try {
       String code = await BarcodeScanner.scan();
@@ -159,16 +179,9 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
         _showError("qrcode is null");
         return;
       }
-
+      var dateTime = DateTime.now();
       var uptime = await getSystemUptime();
-      CheckPoint checkPoint = CheckPoint.create(code, DateTime.now(), uptime);
-
-      setState(() {
-        contest.addCheckPoint(checkPoint);
-        scrollToBottom();
-      });
-
-      _saveData();
+      addCheckPoint(code, dateTime, uptime);
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
         _showError("Access denied");
