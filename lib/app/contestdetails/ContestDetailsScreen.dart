@@ -6,6 +6,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:hybrid_app/app/contestdetails/ExitContestDialog.dart';
 import 'package:hybrid_app/app/contestdetails/ListItem.dart';
 import 'package:hybrid_app/app/main/MainScreen.dart';
 import 'package:hybrid_app/conf/Conf.dart';
@@ -54,11 +55,21 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     if (selected == MenuButton.send_results) {
       _sendResults();
     } else if (selected == MenuButton.exit) {
+      showExitContestDialog();
+    }
+  }
+
+  void showExitContestDialog() async {
+    bool exit = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) => ExitContestDialog());
+
+    if (exit) {
       _exitContest();
     }
   }
 
-  void _exitContest() async {
+  Future _exitContest() async {
     await widget.dataSource.clearActiveContestId();
     _navigateToMain();
   }
@@ -74,7 +85,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     }
   }
 
-  void _sendResults() async {
+  Future _sendResults() async {
     final user = await widget.userDataSource.loadData();
     final result = Result.create(user, contest);
     final directory = await getApplicationDocumentsDirectory();
@@ -125,35 +136,43 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
       )
     ]);
 
-    Widget list = ListView.separated(
-      controller: _scrollController,
-      itemBuilder: (BuildContext context, int index) {
-        CheckPoint checkPoint = contest.getCheckPoints()[index];
-        CheckPoint previousCheckPoint;
-        if (index > 0) {
-          previousCheckPoint = contest.getCheckPoints()[index - 1];
-        }
-        return ListItem(
-            checkPoint: checkPoint,
-            previousCheckPoint: previousCheckPoint,
-            onDeletePress: this.removeCheckPoint);
-      },
-      itemCount: contest.getCheckPoints().length,
-      separatorBuilder: (context, index) =>
-          Divider(
-            color: Colors.grey,
-            height: 1,
-            indent: 16,
-          ),
-      padding: EdgeInsets.only(bottom: 70),
-    );
-
     return new Scaffold(
       key: widget._scaffoldKey,
       floatingActionButton: fab,
       appBar: appBar,
-      body: list,
+      body: buildBody(),
     );
+  }
+
+  Widget buildBody() {
+    if (contest.checkpoints.isEmpty) {
+      return Center(
+          child: Text("Võistluse alustamiseks pildista stardi QR-koodi"));
+    } else {
+      return ListView.separated(
+        controller: _scrollController,
+        itemBuilder: (BuildContext context, int index) {
+          CheckPoint checkPoint = contest.getCheckPoints()[index];
+          CheckPoint previousCheckPoint;
+          if (index > 0) {
+            previousCheckPoint = contest.getCheckPoints()[index - 1];
+          }
+          return ListItem(
+              checkPoint: checkPoint,
+              previousCheckPoint: previousCheckPoint,
+              onDeletePress: this.removeCheckPoint);
+        },
+        itemCount: contest
+            .getCheckPoints()
+            .length,
+        separatorBuilder: (context, index) =>
+            Divider(
+              color: Colors.grey,
+              height: 1,
+            ),
+        padding: EdgeInsets.only(bottom: 70),
+      );
+    }
   }
 
   void addCheckPoint(String code, DateTime dateTime, int uptime) {
@@ -176,32 +195,21 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     try {
       String code = await BarcodeScanner.scan();
       if (code == null) {
-        _showError("qrcode is null");
+        _showError("Tekkis viga");
         return;
       }
       var dateTime = DateTime.now();
-      var uptime = await getSystemUptime();
+      var uptime = await Uptime.uptime;
       addCheckPoint(code, dateTime, uptime);
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
-        _showError("Access denied");
+        _showError("Kaamerale puudub ligipääs");
       } else {
-        _showError('Unknown error: $e');
+        _showError('Tekkis viga: $e');
       }
     } on FormatException {} catch (e) {
-      _showError('Unknown error: $e');
+      _showError('Tekkis viga: $e');
     }
-  }
-
-  Future<int> getSystemUptime() async {
-    int uptime;
-    try {
-      uptime = await Uptime.uptime;
-    } on PlatformException {
-      // todo add logging
-    }
-
-    return uptime;
   }
 
   void scrollToBottom() {
@@ -214,7 +222,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
     });
   }
 
-  void _saveData() async => await widget.dataSource.save(contest);
+  Future _saveData() async => await widget.dataSource.save(contest);
 
   void _showError(String message) {
     _showSnackBar(message);

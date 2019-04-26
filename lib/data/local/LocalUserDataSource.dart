@@ -19,8 +19,8 @@ class LocalUserDataSource implements UserDataSource {
     return user;
   }
 
-  void saveData(User user) async {
+  Future<bool> saveData(User user) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString(KEY, json.encode(user));
+    return prefs.setString(KEY, json.encode(user));
   }
 }

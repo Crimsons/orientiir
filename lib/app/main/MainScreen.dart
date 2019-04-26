@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hybrid_app/app/contestdetails/ContestDetailsScreen.dart';
 import 'package:hybrid_app/app/main/NewContestDialog.dart';
-import 'package:hybrid_app/app/main/component/LastCompetitionButton.dart';
-import 'package:hybrid_app/app/main/component/NewCompetitionButton.dart';
-import 'package:hybrid_app/app/main/component/UserName.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
+import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
+import 'package:hybrid_app/data/model/user/UserDataSource.dart';
+import 'package:intl/intl.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -15,42 +15,79 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
   final ContestDataSource contestDataSource = LocalContestDataSource();
+  final UserDataSource userDataSource = LocalUserDataSource();
 
-  Contest _lastContest;
+  List<Contest> contestList = [];
+  String userName = "";
 
   @override
   void initState() {
     super.initState();
-    _loadLastContest();
+    _loadUser();
+    _loadContestList();
   }
 
-  void _loadLastContest() async {
-    var contests = await contestDataSource.loadAll();
+  void _loadUser() async {
+    var user = await userDataSource.loadData();
+    setState(() {
+      this.userName = user?.name ?? "";
+    });
+  }
 
-    if (contests.isNotEmpty) {
-      setState(() {
-        _lastContest = contests.last;
-      });
-    }
+  void _loadContestList() async {
+    var contests = await contestDataSource.loadAll();
+    contests.sort((a, b) => b.date.compareTo(a.date));
+    setState(() {
+      contestList = contests;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Orienteerumise rakendus"),
-      ),
-      body: ListView(
-        padding: EdgeInsets.only(left: 16, right: 16, top: 148, bottom: 16),
-        children: <Widget>[
-          UserName(),
-          NewCompetitionButton(onPressed: _showNewContestDialog),
-          LastCompetitionButton(
-              onPressed:
-                  _lastContest != null ? _navigateToLastContestDetails : null),
-        ],
-      ),
-    );
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showNewContestDialog,
+          child: Icon(Icons.add),
+          tooltip: "Alusta uut võistlust",
+        ),
+        appBar: AppBar(
+          title: Text("Võistleja: " + userName),
+        ),
+        body: buildBody());
+  }
+
+  Widget buildBody() {
+    if (contestList.isEmpty) {
+      return Center(child: Text("Võistluse lisamiseks vajuta \"+\" nupule"));
+    } else {
+      return ListView.separated(
+        itemBuilder: (BuildContext context, int index) {
+          Contest contest = contestList[index];
+          return ListTile(
+              title: Text(
+                contest.name,
+                style: TextStyle(fontSize: 22),
+              ),
+              subtitle: Text(
+                getDateString(contest),
+                style: TextStyle(fontSize: 16),
+              ),
+              onTap: () => _navigateToContestDetails(contest));
+        },
+        itemCount: contestList.length,
+        separatorBuilder: (context, index) =>
+            Divider(
+              color: Colors.grey,
+              height: 1,
+            ),
+        padding: EdgeInsets.only(bottom: 70),
+      );
+    }
+  }
+
+  String getDateString(Contest contest) {
+    var formatter = DateFormat("dd.MM.yyyy kk:mm");
+    return "${formatter.format(contest.date)}";
   }
 
   void _showNewContestDialog() async {
@@ -60,11 +97,8 @@ class MainScreenState extends State<MainScreen> {
 
     if (name != null) {
       Contest contest = _createNewContest(name);
-      setState(() {
-        _lastContest = contest;
-      });
       await _saveContest(contest);
-      _navigateToContestDetails(contest);
+      await _navigateToContestDetails(contest);
     }
   }
 
@@ -72,12 +106,12 @@ class MainScreenState extends State<MainScreen> {
     return Contest.fromName(name, DateTime.now());
   }
 
-  _saveContest(Contest contest) async {
+  Future _saveContest(Contest contest) async {
     await contestDataSource.save(contest);
-    await contestDataSource.saveActiveContestId(contest.id);
   }
 
-  void _navigateToContestDetails(Contest contest) {
+  Future _navigateToContestDetails(Contest contest) async {
+    await setContestActive(contest);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -85,12 +119,7 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _navigateToLastContestDetails() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) =>
-              ContestDetailsScreen(contestId: _lastContest.id)),
-    );
+  Future setContestActive(Contest contest) async {
+    await contestDataSource.saveActiveContestId(contest.id);
   }
 }

@@ -17,7 +17,9 @@ class NewContestDialogState extends State<NewContestDialog> {
         key: _formKey,
         child: TextFormField(
           validator: (value) {
-            if (value.isEmpty) {
+            if (value
+                .trim()
+                .isEmpty) {
               return 'Sisesta korrektne võistluse nimi';
             }
           },
@@ -25,9 +27,8 @@ class NewContestDialogState extends State<NewContestDialog> {
           keyboardType: TextInputType.text,
           autofocus: true,
           controller: textFieldController,
-          decoration: InputDecoration(
-            labelText: "nimi",
-          ),
+          onFieldSubmitted: (input) => handleOkPressed(context),
+          textCapitalization: TextCapitalization.sentences,
         ),
       ),
       actions: <Widget>[
@@ -38,14 +39,15 @@ class NewContestDialogState extends State<NewContestDialog> {
           },
         ),
         FlatButton(
-          child: Text('OK'),
-          onPressed: () {
-            if (_formKey.currentState.validate()) {
-              Navigator.of(context).pop(textFieldController.text);
-            }
-          },
-        ),
+            child: Text('OK'), onPressed: () => handleOkPressed(context)),
       ],
     );
+  }
+
+  void handleOkPressed(BuildContext context) {
+    if (_formKey.currentState.validate()) {
+      String name = textFieldController.text.trim();
+      Navigator.of(context).pop(name);
+    }
   }
 }

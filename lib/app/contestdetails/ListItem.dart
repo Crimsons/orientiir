@@ -123,9 +123,9 @@ class ListItem extends StatelessWidget {
       case CheckPointType.finish:
         return "FINIŠ";
       case CheckPointType.checkpoint:
-        return "KP " + checkPoint.humanReadableCode;
+        return checkPoint.humanReadableCode;
       case CheckPointType.extra:
-        return "LK " + checkPoint.humanReadableCode;
+        return checkPoint.humanReadableCode;
       case CheckPointType.auxiliary:
         return "RESERVEERITUD";
       case CheckPointType.unknown:
