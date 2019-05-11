@@ -5,10 +5,10 @@ import 'package:intl/intl.dart';
 
 class ListItem extends StatelessWidget {
   final CheckPoint checkPoint;
-  final CheckPoint previousCheckPoint;
+  final CheckPoint nextCheckPoint;
   final Function onDeletePress;
 
-  ListItem({this.checkPoint, this.previousCheckPoint, this.onDeletePress});
+  ListItem({this.checkPoint, this.nextCheckPoint, this.onDeletePress});
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +140,7 @@ class ListItem extends StatelessWidget {
   }
 
   Widget _buildLapTimeText() {
-    if (previousCheckPoint != null) {
+    if (nextCheckPoint != null) {
       return Text(
         _lapTimeString,
         style: TextStyle(fontSize: 16),
@@ -151,8 +151,7 @@ class ListItem extends StatelessWidget {
   }
 
   String get _lapTimeString {
-    final duration =
-    checkPoint.dateTime.difference(previousCheckPoint.dateTime);
+    final duration = checkPoint.dateTime.difference(nextCheckPoint.dateTime);
     final durationString = duration
         .toString()
         .split(".")
