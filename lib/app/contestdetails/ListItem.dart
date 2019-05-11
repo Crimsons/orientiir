@@ -123,14 +123,11 @@ class ListItem extends StatelessWidget {
       case CheckPointType.finish:
         return "FINIŠ";
       case CheckPointType.checkpoint:
-        return checkPoint.humanReadableCode;
       case CheckPointType.extra:
-        return checkPoint.humanReadableCode;
       case CheckPointType.auxiliary:
-        return "RESERVEERITUD";
       case CheckPointType.unknown:
       default:
-        return "TUNDMATU";
+        return checkPoint.humanReadableCode;
     }
   }
 
