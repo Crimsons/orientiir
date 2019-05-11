@@ -138,39 +138,67 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
     return new Scaffold(
       key: widget._scaffoldKey,
-      floatingActionButton: fab,
       appBar: appBar,
       body: buildBody(),
     );
   }
 
   Widget buildBody() {
+    return Column(
+      children: <Widget>[
+        buildList(),
+        Container(
+          width: double.infinity,
+          margin: EdgeInsets.all(16),
+          child: RaisedButton(
+            onPressed: _scan,
+            color: Colors.blue,
+            padding: EdgeInsets.symmetric(vertical: 48),
+            child: Text("Registreeri punkt",
+                style: TextStyle(color: Colors.white, fontSize: 24)),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget buildList() {
     if (contest.checkpoints.isEmpty) {
-      return Center(
-          child: Text("Võistluse alustamiseks pildista stardi QR-koodi"));
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Center(
+              child: Text(
+                "Võistluse alustamiseks pildista stardi QR-koodi",
+                style: TextStyle(fontSize: 18),
+                textAlign: TextAlign.center,
+              )),
+        ),
+      );
     } else {
-      return ListView.separated(
-        controller: _scrollController,
-        itemBuilder: (BuildContext context, int index) {
-          CheckPoint checkPoint = contest.getCheckPoints()[index];
-          CheckPoint previousCheckPoint;
-          if (index > 0) {
-            previousCheckPoint = contest.getCheckPoints()[index - 1];
-          }
-          return ListItem(
-              checkPoint: checkPoint,
-              previousCheckPoint: previousCheckPoint,
-              onDeletePress: this.removeCheckPoint);
-        },
-        itemCount: contest
-            .getCheckPoints()
-            .length,
-        separatorBuilder: (context, index) =>
-            Divider(
-              color: Colors.grey,
-              height: 1,
-            ),
-        padding: EdgeInsets.only(bottom: 70),
+      return Expanded(
+        child: ListView.separated(
+          controller: _scrollController,
+          itemBuilder: (BuildContext context, int index) {
+            CheckPoint checkPoint = contest.getCheckPoints()[index];
+            CheckPoint previousCheckPoint;
+            if (index > 0) {
+              previousCheckPoint = contest.getCheckPoints()[index - 1];
+            }
+            return ListItem(
+                checkPoint: checkPoint,
+                previousCheckPoint: previousCheckPoint,
+                onDeletePress: this.removeCheckPoint);
+          },
+          itemCount: contest
+              .getCheckPoints()
+              .length,
+          separatorBuilder: (context, index) =>
+              Divider(
+                color: Colors.grey,
+                height: 1,
+              ),
+        ),
       );
     }
   }
