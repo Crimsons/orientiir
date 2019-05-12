@@ -58,7 +58,15 @@ class MainScreenState extends State<MainScreen> {
 
   Widget buildBody() {
     if (contestList.isEmpty) {
-      return Center(child: Text("Võistluse lisamiseks vajuta \"+\" nupule"));
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        child: Center(
+            child: Text(
+          "Võistluse lisamiseks vajuta \"+\" nupule",
+          style: TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
+        )),
+      );
     } else {
       return ListView.separated(
         itemBuilder: (BuildContext context, int index) {
@@ -75,8 +83,7 @@ class MainScreenState extends State<MainScreen> {
               onTap: () => _navigateToContestDetails(contest));
         },
         itemCount: contestList.length,
-        separatorBuilder: (context, index) =>
-            Divider(
+        separatorBuilder: (context, index) => Divider(
               color: Colors.grey,
               height: 1,
             ),
