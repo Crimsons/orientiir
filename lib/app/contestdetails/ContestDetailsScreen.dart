@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:hybrid_app/app/contestdetails/ExitContestDialog.dart';
 import 'package:hybrid_app/app/main/MainScreen.dart';
 import 'package:hybrid_app/conf/Conf.dart';
@@ -14,9 +15,9 @@ import 'package:hybrid_app/data/model/checkpoint/CheckPoint.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
 import 'package:hybrid_app/data/model/result/Result.dart';
+import 'package:hybrid_app/data/model/user/User.dart';
 import 'package:hybrid_app/data/model/user/UserDataSource.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share/share.dart';
 import 'package:uptime/uptime.dart';
 import 'package:vibration/vibration.dart';
 
@@ -29,7 +30,6 @@ class ContestDetailsScreen extends StatefulWidget {
   final UserDataSource userDataSource = LocalUserDataSource();
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   final String contestId;
-  final JsonEncoder jsonEncoder = JsonEncoder.withIndent(jsonIndent);
 
   ContestDetailsScreen({Key key, @required this.contestId}) : super(key: key);
 
@@ -81,28 +81,7 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
   Future _sendResults() async {
     final user = await widget.userDataSource.loadData();
-    final result = Result.create(user, contest);
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
-    var file = File(_getFilename(path, user.name));
-    await file.writeAsString(widget.jsonEncoder.convert(result), flush: true);
-
-    Share.shareFile(file);
-  }
-
-  String _getFilename(String path, String userName) {
-    var fileName = userName
-        .trim()
-        .toLowerCase()
-        .replaceAll("õ", "6")
-        .replaceAll("ä", "a")
-        .replaceAll("ö", "o")
-        .replaceAll("ü", "y")
-        .replaceAll("š", "s")
-        .replaceAll("ž", "z")
-        .replaceAll(new RegExp("[^0-9a-zA-Z_-]"), "");
-
-    return "$path/$fileName.json";
+    await _sendResultsEmail(user, contest);
   }
 
   @override
@@ -196,4 +175,45 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
     widget._scaffoldKey.currentState.showSnackBar(snackBar);
   }
+}
+
+String _getFilename(String path, String userName) {
+  var fileName = userName
+      .trim()
+      .toLowerCase()
+      .replaceAll("õ", "6")
+      .replaceAll("ä", "a")
+      .replaceAll("ö", "o")
+      .replaceAll("ü", "y")
+      .replaceAll("š", "s")
+      .replaceAll("ž", "z")
+      .replaceAll(new RegExp("[^0-9a-zA-Z_-]"), "");
+
+  return "$path/$fileName.json";
+}
+
+Future _sendResultsEmail(User user, Contest contest) async {
+  final JsonEncoder jsonEncoder = JsonEncoder.withIndent(jsonIndent);
+  final result = Result.create(user, contest);
+  final directory = await getTemporaryDirectory();
+  final path = directory.path;
+  var file = File(_getFilename(path, user.name));
+  await file.writeAsString(jsonEncoder.convert(result), flush: true);
+
+  final Email email = Email(
+    body: _getResultsEmailBody(user, contest),
+    subject: _getResultsEmailSubject(user, contest),
+    recipients: [resultRecipientEmail],
+    attachmentPath: file.path,
+  );
+
+  await FlutterEmailSender.send(email);
+}
+
+String _getResultsEmailSubject(User user, Contest contest) {
+  return '${user.name} - ${contest.name} tulemused';
+}
+
+String _getResultsEmailBody(User user, Contest contest) {
+  return 'Võistleja nimi: ${user.name}\nEtapp: ${contest.name}';
 }

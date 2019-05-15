@@ -28,11 +28,10 @@ dependencies:
   intl: 0.15.7
   uptime: ^0.0.1
   vibration: 1.0.2
-  share:
+  flutter_email_sender:
     git:
-      url: https://github.com/pboos/plugins.git
-      path: packages/share
-      ref: feature/shareFile
+      url: https://github.com/Crimsons/flutter_email_sender.git
+      ref: fix
 
 
 dev_dependencies:
