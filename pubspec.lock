@@ -65,7 +65,7 @@ packages:
       name: build_resolvers
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.4"
+    version: "1.0.5"
   build_runner:
     dependency: "direct dev"
     description:
@@ -488,7 +488,7 @@ packages:
       name: web_socket_channel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.12"
+    version: "1.0.13"
   yaml:
     dependency: transitive
     description:

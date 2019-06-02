@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hybrid_app/app/addeditusername/AddEditUserNameScreen.dart';
 import 'package:hybrid_app/app/contestdetails/ContestDetailsScreen.dart';
 import 'package:hybrid_app/app/main/NewContestDialog.dart';
 import 'package:hybrid_app/data/local/LocalContestDataSource.dart';
@@ -6,7 +7,10 @@ import 'package:hybrid_app/data/local/LocalUserDataSource.dart';
 import 'package:hybrid_app/data/model/checkpoint/Contest.dart';
 import 'package:hybrid_app/data/model/checkpoint/ContestDataSource.dart';
 import 'package:hybrid_app/data/model/user/UserDataSource.dart';
-import 'package:intl/intl.dart';
+
+import 'ContestList.dart';
+import 'MainAppBar.dart';
+import 'NoContentText.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -14,31 +18,31 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-  final ContestDataSource contestDataSource = LocalContestDataSource();
-  final UserDataSource userDataSource = LocalUserDataSource();
+  final ContestDataSource _contestDataSource = LocalContestDataSource();
+  final UserDataSource _userDataSource = LocalUserDataSource();
 
-  List<Contest> contestList = [];
-  String userName = "";
+  List<Contest> _contestList = [];
+  String _userName = "";
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
+    _loadUserName();
     _loadContestList();
   }
 
-  void _loadUser() async {
-    var user = await userDataSource.loadData();
+  void _loadUserName() async {
+    var user = await _userDataSource.loadData();
     setState(() {
-      this.userName = user?.name ?? "";
+      _userName = user?.name ?? "";
     });
   }
 
   void _loadContestList() async {
-    var contests = await contestDataSource.loadAll();
+    var contests = await _contestDataSource.loadAll();
     contests.sort((a, b) => b.date.compareTo(a.date));
     setState(() {
-      contestList = contests;
+      _contestList = contests;
     });
   }
 
@@ -50,51 +54,27 @@ class MainScreenState extends State<MainScreen> {
           child: Icon(Icons.add),
           tooltip: "Alusta uut võistlust",
         ),
-        appBar: AppBar(
-          title: Text("Võistleja: " + userName),
-        ),
-        body: buildBody());
+        appBar: MainAppBar(_userName, _handleEditUserNamePressed),
+        body: _contestList.isEmpty
+            ? NoContentText()
+            : ContestList(_contestList, _handleContestPressed));
   }
 
-  Widget buildBody() {
-    if (contestList.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-        child: Center(
-            child: Text(
-          "Võistluse lisamiseks vajuta \"+\" nupule",
-          style: TextStyle(fontSize: 18),
-          textAlign: TextAlign.center,
-        )),
-      );
-    } else {
-      return ListView.separated(
-        itemBuilder: (BuildContext context, int index) {
-          Contest contest = contestList[index];
-          return ListTile(
-              title: Text(
-                contest.name,
-                style: TextStyle(fontSize: 22),
-              ),
-              subtitle: Text(
-                getDateString(contest),
-                style: TextStyle(fontSize: 16),
-              ),
-              onTap: () => _navigateToContestDetails(contest));
-        },
-        itemCount: contestList.length,
-        separatorBuilder: (context, index) => Divider(
-              color: Colors.grey,
-              height: 1,
-            ),
-        padding: EdgeInsets.only(bottom: 70),
-      );
-    }
+  void _handleEditUserNamePressed() {
+    navigateToEditUserName();
   }
 
-  String getDateString(Contest contest) {
-    var formatter = DateFormat("dd.MM.yyyy kk:mm");
-    return "${formatter.format(contest.date)}";
+  void _handleContestPressed(Contest contest) {
+    _navigateToContestDetails(contest);
+  }
+
+  void navigateToEditUserName() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => AddEditUserNameScreen(edit: true)),
+    );
+    _loadUserName();
   }
 
   void _showNewContestDialog() async {
@@ -114,7 +94,7 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Future _saveContest(Contest contest) async {
-    await contestDataSource.save(contest);
+    await _contestDataSource.save(contest);
   }
 
   Future _navigateToContestDetails(Contest contest) async {
@@ -127,6 +107,6 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Future setContestActive(Contest contest) async {
-    await contestDataSource.saveActiveContestId(contest.id);
+    await _contestDataSource.saveActiveContestId(contest.id);
   }
 }
