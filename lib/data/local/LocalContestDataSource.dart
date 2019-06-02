@@ -20,7 +20,6 @@ class LocalContestDataSource implements ContestDataSource {
       var list = json.decode(jsonString) as List;
       data = list.map((item) => Contest.fromJson(item)).toList();
     }
-
     return data;
   }
 
@@ -28,7 +27,6 @@ class LocalContestDataSource implements ContestDataSource {
   Future<Contest> load(String id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var contentsList = _loadAll(prefs);
-
     return contentsList.firstWhere((item) => item.id == id, orElse: () => null);
   }
 
@@ -60,5 +58,13 @@ class LocalContestDataSource implements ContestDataSource {
   Future<bool> clearActiveContestId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.remove(KEY_ACTIVE_CONTEST_ID);
+  }
+
+  @override
+  Future<bool> deleteContest(String id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var contests = _loadAll(prefs);
+    contests.removeWhere((item) => item.id == id);
+    return _save(prefs, contests);
   }
 }

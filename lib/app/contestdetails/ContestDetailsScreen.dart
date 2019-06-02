@@ -48,6 +48,12 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
   void _loadData() async {
     var contest = await widget.dataSource.load(widget.contestId);
+
+    if (contest == null) {
+      _exitContest();
+      return;
+    }
+
     setState(() {
       this.contest = contest;
     });
@@ -86,17 +92,19 @@ class ContestDetailsState extends State<ContestDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final name = contest?.name ?? "";
+    final checkpoints = contest?.checkpoints ?? <CheckPoint>[];
+
     return new Scaffold(
       key: widget._scaffoldKey,
-      appBar: ContestDetailsAppBar(
-          contest.name, _sendResults, showExitContestDialog),
+      appBar: ContestDetailsAppBar(name, _sendResults, showExitContestDialog),
       body: Column(
         children: <Widget>[
           Flexible(
-              child: contest.checkpoints.isEmpty
+              child: checkpoints.isEmpty
                   ? NoCheckPointsMessage()
                   : CheckPointsList(
-                  data: contest.checkpoints.reversed.toList(),
+                  data: checkpoints.reversed.toList(),
                   onDeleteCheckPointPress: this.removeCheckPoint),
               fit: FlexFit.tight),
           Container(

@@ -12,4 +12,6 @@ abstract class ContestDataSource {
   Future<bool> saveActiveContestId(String id);
 
   Future<bool> clearActiveContestId();
+
+  Future<bool> deleteContest(String id);
 }

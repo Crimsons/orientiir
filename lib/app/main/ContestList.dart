@@ -6,8 +6,10 @@ import 'package:intl/intl.dart';
 class ContestList extends StatelessWidget {
   final _contestList;
   final Function _onItemPress;
+  final Function _onItemDeletePress;
 
-  const ContestList(this._contestList, this._onItemPress);
+  const ContestList(this._contestList, this._onItemPress,
+      this._onItemDeletePress);
 
   @override
   Widget build(BuildContext context) {
@@ -15,15 +17,17 @@ class ContestList extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         Contest contest = _contestList[index];
         return ListTile(
-            title: Text(
-              contest.name,
-              style: TextStyle(fontSize: 22),
-            ),
-            subtitle: Text(
-              _getDateString(contest),
-              style: TextStyle(fontSize: 16),
-            ),
-            onTap: () => _onItemPress(contest));
+          title: Text(
+            contest.name,
+            style: TextStyle(fontSize: 22),
+          ),
+          subtitle: Text(
+            _getDateString(contest),
+            style: TextStyle(fontSize: 16),
+          ),
+          onTap: () => _onItemPress(contest),
+          trailing: _buildPopupMenu(() => _onItemDeletePress(contest)),
+        );
       },
       itemCount: _contestList.length,
       separatorBuilder: (context, index) => Divider(
@@ -35,7 +39,30 @@ class ContestList extends StatelessWidget {
   }
 }
 
+PopupMenuButton<MenuButton> _buildPopupMenu(Function onDeletePress) {
+  return PopupMenuButton(
+    onSelected: (MenuButton selected) {
+      if (selected == MenuButton.delete) {
+        onDeletePress();
+      }
+    },
+    itemBuilder: (BuildContext context) =>
+    [
+      const PopupMenuItem(
+        value: MenuButton.delete,
+        child: const ListTile(
+          leading: const Icon(Icons.delete),
+          title: const Text('Kustuta'),
+        ),
+      ),
+    ],
+    tooltip: "Valikud",
+  );
+}
+
 String _getDateString(Contest contest) {
   var formatter = DateFormat("dd.MM.yyyy kk:mm");
   return "${formatter.format(contest.date)}";
 }
+
+enum MenuButton { delete }

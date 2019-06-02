@@ -57,18 +57,23 @@ class MainScreenState extends State<MainScreen> {
         appBar: MainAppBar(_userName, _handleEditUserNamePressed),
         body: _contestList.isEmpty
             ? NoContentText()
-            : ContestList(_contestList, _handleContestPressed));
+            : ContestList(_contestList, _handleContestPressed,
+            _handleContestDeletePressed));
   }
 
   void _handleEditUserNamePressed() {
-    navigateToEditUserName();
+    _navigateToEditUserName();
   }
 
   void _handleContestPressed(Contest contest) {
     _navigateToContestDetails(contest);
   }
 
-  void navigateToEditUserName() async {
+  void _handleContestDeletePressed(Contest contest) {
+    _deleteContest(contest);
+  }
+
+  void _navigateToEditUserName() async {
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -98,7 +103,7 @@ class MainScreenState extends State<MainScreen> {
   }
 
   Future _navigateToContestDetails(Contest contest) async {
-    await setContestActive(contest);
+    await _setContestActive(contest);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -106,7 +111,12 @@ class MainScreenState extends State<MainScreen> {
     );
   }
 
-  Future setContestActive(Contest contest) async {
+  Future _setContestActive(Contest contest) async {
     await _contestDataSource.saveActiveContestId(contest.id);
+  }
+
+  Future _deleteContest(Contest contest) async {
+    await _contestDataSource.deleteContest(contest.id);
+    _loadContestList();
   }
 }
